@@ -9,13 +9,11 @@
 #include <capstone/capstone.h>
 
 typedef struct {
-  PyObject_HEAD
-  csh handle;
+    PyObject_HEAD csh handle;
 } Cs;
 
 typedef struct {
-  PyObject_HEAD
-  cs_insn insn_;
+    PyObject_HEAD cs_insn insn_;
 } CsInsn;
 
 #endif
