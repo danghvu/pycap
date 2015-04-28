@@ -66,8 +66,8 @@ def test_class():
         #try:
         md = Cs(arch, mode)
 
-        for c in md.disasm(code, 0x1000):
-            print("0x%x:\t%s\t%s" % (c.address, c.mnemonic, c.op_str))
+        for (address, size, mnemonic, op_str) in md.disasm_lite(code, 0x1000):
+            print("0x%x:\t%s\t%s" % (address, mnemonic, op_str))
 
         #except CsError as e:
         #    print("ERROR: %s" % e)

@@ -41,18 +41,50 @@ PyObject * Cs_disasm(PyObject *self, PyObject *args)
 
   count = cs_disasm(((Cs *)self)->handle, (const uint8_t*) buffer, buflen, addr, 0, &insn);
 
+  list = (PyListObject*) PyList_New(count);
   size_t j;
   for (j = 0; j < count; j++) {
     CsInsn *py_insn = NULL;
     py_insn = PyObject_New(CsInsn, &CsInsnType);
     memcpy((char*) py_insn + offsetof(CsInsn, insn_), &insn[j], sizeof(cs_insn));
-    PyList_Append((PyObject*) list, (PyObject*) py_insn);
+    PyList_SetItem((PyObject*) list, j, (PyObject*) py_insn);
+  }
+  return (PyObject*) list;
+}
+
+PyObject * Cs_disasm_lite(PyObject *self, PyObject *args)
+{
+  const char* buffer;
+  Py_ssize_t addr, buflen;
+  cs_insn *insn;
+  size_t count;
+  PyListObject *list;
+
+  list = (PyListObject *) Py_BuildValue("[]");
+
+  if (!PyArg_ParseTuple(args, "s#n", &buffer, &buflen, &addr))
+    return (PyObject*) list;
+
+  count = cs_disasm(((Cs *)self)->handle, (const uint8_t*) buffer, buflen, addr, 0, &insn);
+
+  size_t j;
+  PyObject* tuple = NULL;
+  list = (PyListObject*) PyList_New(count);
+
+  for (j = 0; j < count; j++) {
+    tuple = Py_BuildValue("(L, H, s, s)",
+            insn[j].address, insn[j].size,
+            insn[j].mnemonic,
+            insn[j].op_str);
+
+    PyList_SetItem((PyObject*) list, j, (PyObject*) tuple);
   }
   return (PyObject*) list;
 }
 
 PyMethodDef Cs_methods[] = {
   {"disasm", (PyCFunction) Cs_disasm, METH_VARARGS, "disassemble"},
+  {"disasm_lite", (PyCFunction) Cs_disasm_lite, METH_VARARGS, "disassemble lite"},
   { NULL },
 };
 

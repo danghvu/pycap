@@ -106,20 +106,18 @@ for (arch, mode, comment, syntax) in all_tests:
 
     print "Benchmark - full obj:", c_t, "seconds"
     print
-    '''
 
-        cfile.seek(0)
-        c_t = 0
-        for i in xrange(50000):
-            code = get_code(cfile, 128)
-            #print to_hex(code)
-            #print
+    cfile.seek(0)
+    c_t = 0
+    for i in xrange(50000):
+        code = get_code(cfile, 128)
+        #print to_hex(code)
+        #print
 
-            t1 = time()
-            cs_lite(md, code)
-            c_t += time() - t1
+        t1 = time()
+        cs_lite(md, code)
+        c_t += time() - t1
 
-        print "Benchmark - lite:", c_t, "seconds"
-        print
-        '''
-        # print("ERROR: %s" %e)
+    print "Benchmark - lite:", c_t, "seconds"
+    print
+    # print("ERROR: %s" %e)
