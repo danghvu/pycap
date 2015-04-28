@@ -1,12 +1,11 @@
-#define PY_SSIZE_T_CLEAN
+#include "pycap.h"
 
-#include "Python.h"
-#include "structmember.h"
+PyMethodDef module_methods[] = {
+  {NULL, NULL, 0, NULL}
+};
 
-#include <capstone/capstone.h>
-
-#include "cs_insn_def.h"
-#include "cs_def.h"
+extern PyTypeObject CsInsnType;
+extern PyTypeObject CsType;
 
 void initcapstone_ext(void)
 {

@@ -1,13 +1,6 @@
-#ifndef CS_DEF_H_
-#define CS_DEF_H_
+#include "pycap.h"
 
-typedef struct {
-  PyObject_HEAD
-  csh handle;
-} Cs;
-
-static int
-Cs_init(Cs *self, PyObject *args, PyObject *kwds)
+int Cs_init(Cs *self, PyObject *args, PyObject *kwds)
 {
   cs_arch arch;
   cs_mode mode;
@@ -25,15 +18,15 @@ Cs_init(Cs *self, PyObject *args, PyObject *kwds)
   return 0;
 }
 
-static void
-Cs_dealloc(Cs* self)
+void Cs_dealloc(Cs* self)
 {
   cs_close(&self->handle);
   self->ob_type->tp_free((PyObject*)self);
 }
 
-static PyObject *
-Cs_disasm(PyObject *self, PyObject *args)
+extern PyTypeObject CsInsnType;
+
+PyObject * Cs_disasm(PyObject *self, PyObject *args)
 {
   const char* buffer;
   Py_ssize_t addr, buflen;
@@ -41,36 +34,31 @@ Cs_disasm(PyObject *self, PyObject *args)
   size_t count;
   PyListObject *list;
 
+  list = (PyListObject *) Py_BuildValue("[]");
+
   if (!PyArg_ParseTuple(args, "s#n", &buffer, &buflen, &addr))
-    return NULL;
+    return (PyObject*) list;
 
   count = cs_disasm(((Cs *)self)->handle, (const uint8_t*) buffer, buflen, addr, 0, &insn);
 
-  if (count > 0) {
-    list = (PyListObject *) Py_BuildValue("[]");
-    size_t j;
-    for (j = 0; j < count; j++) {
-      CsInsn *py_insn = NULL;
-      py_insn = PyObject_New(CsInsn, &CsInsnType);
-      memcpy((char*) py_insn + offsetof(CsInsn, insn_), &insn[j], sizeof(cs_insn));
-      PyList_Append((PyObject*) list, (PyObject*) py_insn);
-      //printf("0x%"PRIx64":\t%s\t\t%s\n", py_insn->insn_.address, py_insn->insn_.mnemonic,
-      //    py_insn->insn_.op_str);
-    }
-    return (PyObject*) list;
-  } else {
-    return Py_None;
+  size_t j;
+  for (j = 0; j < count; j++) {
+    CsInsn *py_insn = NULL;
+    py_insn = PyObject_New(CsInsn, &CsInsnType);
+    memcpy((char*) py_insn + offsetof(CsInsn, insn_), &insn[j], sizeof(cs_insn));
+    PyList_Append((PyObject*) list, (PyObject*) py_insn);
   }
+  return (PyObject*) list;
 }
 
-static PyMethodDef Cs_methods[] = {
+PyMethodDef Cs_methods[] = {
   {"disasm", (PyCFunction) Cs_disasm, METH_VARARGS, "disassemble"},
   { NULL },
 };
 
-static PyTypeObject CsType = {
+PyTypeObject CsType = {
   PyObject_HEAD_INIT(NULL)
-  0,                         /* ob_size */
+    0,                         /* ob_size */
   "Cs",               /* tp_name */
   sizeof(Cs),         /* tp_basicsize */
   0,                         /* tp_itemsize */
@@ -111,8 +99,3 @@ static PyTypeObject CsType = {
 };
 
 
-static PyMethodDef module_methods[] = {
-  {NULL, NULL, 0, NULL}
-};
-
-#endif

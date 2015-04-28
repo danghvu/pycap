@@ -6,7 +6,11 @@ setup(
     description = 'This is a native binding for capstone',
     packages = ['capstone'],
     ext_modules = [
-        Extension('capstone_ext', ['capstone.c'], include_dirs=['/usr/include'],
-        libraries=['capstone'])
+        Extension(
+            'capstone_ext',
+            ['src/pycap.c', 'src/cs.c', 'src/cs_insn.c'],
+            include_dirs=['/usr/include', './include'],
+            libraries=['capstone']
+        )
     ]
 )
